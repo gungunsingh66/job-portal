@@ -35,11 +35,6 @@ const generateAccessAndRefreshTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  // Validation
-  if ([name, email, password].some((field) => !field || field.trim() === "")) {
-    throw new ApiError(400, "All required fields are mandatory");
-  }
-
   // Check existing user
   const existingUser = await User.findOne({ email });
 
@@ -86,8 +81,6 @@ const registerUser = asyncHandler(async (req, res) => {
         201,
         {
           user: createdUser,
-          accessToken,
-          refreshToken,
         },
         "User registered successfully",
       ),
@@ -96,10 +89,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-
-  if ([email, password].some((field) => !field || field.trim() === "")) {
-    throw new ApiError(400, "Email and Password are required");
-  }
 
   const user = await User.findOne({ email });
 
@@ -136,8 +125,6 @@ const loginUser = asyncHandler(async (req, res) => {
         200,
         {
           user: loggedInUser,
-          accessToken,
-          refreshToken,
         },
         "User logged in successfully",
       ),
@@ -222,8 +209,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         {
-          accessToken,
-          refreshToken,
+          user: null,
         },
         "Access token refreshed successfully",
       ),
