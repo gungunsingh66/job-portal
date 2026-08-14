@@ -9,6 +9,8 @@ import { errorHandler } from "./middleware/error.middleware.js";
 import jobRoutes from "./routes/job.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
 
+import { ApiError } from "./utils/ApiError.js";
+
 connectDB();
 
 const app = express();
@@ -27,6 +29,11 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/jobs", jobRoutes);
 
 app.use("/api/v1/applications", applicationRoutes);
+
+app.use((req, res, next) => {
+    res.status(404);
+    next(new ApiError(404, `Route not found: ${req.originalUrl}`));
+});
 
 app.use(errorHandler);
 
