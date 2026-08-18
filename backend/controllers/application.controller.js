@@ -9,10 +9,6 @@ const applyForJob = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { coverLetter = "" } = req.body || {};
 
-  if (req.user.role !== "jobseeker") {
-    throw new ApiError(403, "Only job seekers can apply for jobs");
-  }
-
   const user = await User.findById(req.user._id);
 
   if (!user) {
@@ -57,9 +53,6 @@ const applyForJob = asyncHandler(async (req, res) => {
 });
 
 const getMyApplications = asyncHandler(async (req, res) => {
-  if (req.user.role !== "jobseeker") {
-    throw new ApiError(403, "Only job seekers can view their applications");
-  }
 
   const applications = await Application.find({
     applicant: req.user._id,
@@ -84,10 +77,6 @@ const getMyApplications = asyncHandler(async (req, res) => {
 
 const getJobApplicants = asyncHandler(async (req, res) => {
   const { id } = req.params;
-
-  if (req.user.role !== "recruiter") {
-    throw new ApiError(403, "Only recruiters can view applicants");
-  }
 
   const job = await Job.findById(id);
 
@@ -120,10 +109,6 @@ const getJobApplicants = asyncHandler(async (req, res) => {
 const updateApplicationStatus = asyncHandler(async (req, res) => {
   const { applicationId } = req.params;
   const { status } = req.body;
-
-  if (req.user.role !== "recruiter") {
-    throw new ApiError(403, "Only recruiters can update application status");
-  }
 
   const allowedStatus = ["Pending", "Reviewed", "Accepted", "Rejected"];
 

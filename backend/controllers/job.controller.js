@@ -25,10 +25,6 @@ const createJob = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  if (req.user.role !== "recruiter") {
-    throw new ApiError(403, "Only recruiters can create jobs");
-  }
-
   const job = await Job.create({
     title,
     company,

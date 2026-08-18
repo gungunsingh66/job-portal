@@ -9,7 +9,7 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
     req.header("Authorization")?.replace("Bearer ", "");
 
   if (!token) {
-    throw new ApiError(401, "Unauthorized request");
+    throw new ApiError(401, "Authentication required");
   }
 
   let decodedToken;
@@ -17,7 +17,7 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
   try {
     decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
   } catch (error) {
-    throw new ApiError(401, error.message);
+    throw new ApiError(401, "Invalid or expired access token");
   }
 
   const user = await User.findById(decodedToken._id).select(
@@ -25,7 +25,7 @@ const verifyJWT = asyncHandler(async (req, res, next) => {
   );
 
   if (!user) {
-    throw new ApiError(401, "Invalid Access Token");
+    throw new ApiError(401, "User associated with token no longer exists");
   }
 
   req.user = user;
