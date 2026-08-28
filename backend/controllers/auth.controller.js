@@ -146,7 +146,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken = req.cookies?.refreshToken;
+  const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new ApiError(401, "Refresh token is required");
@@ -205,33 +205,40 @@ const uploadResume = asyncHandler(async (req, res) => {
 
   // Delete old resume from Cloudinary if it exists
   if (user.resume) {
-    const oldResumeUrl =
-      typeof user.resume === "string" ? user.resume : user.resume.url;
+    // const oldResumeUrl =
+    //   typeof user.resume === "string" ? user.resume : user.resume.url;
+    const oldResumeUrl = user.resume.url;
 
     const applicationUsingResume = await Application.findOne({
       applicant: user._id,
       resume: oldResumeUrl,
     });
 
-    if (!applicationUsingResume) {
-      let oldPublicId;
-
-      if (typeof user.resume === "string") {
-        const match = oldResumeUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
-
-        if (match) {
-          oldPublicId = match[1].replace(/\.[^/.]+$/, "");
-        }
-      } else {
-        oldPublicId = user.resume.publicId;
-      }
-
-      if (oldPublicId) {
-        await cloudinary.uploader.destroy(oldPublicId, {
-          resource_type: "image",
-        });
-      }
+    if (!applicationUsingResume && user.resume.publicId) {
+      await cloudinary.uploader.destroy(user.resume.publicId, {
+        resource_type: "image",
+      });
     }
+
+    // if (!applicationUsingResume) {
+    //   let oldPublicId;
+
+    //   if (typeof user.resume === "string") {
+    //     const match = oldResumeUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
+
+    //     if (match) {
+    //       oldPublicId = match[1].replace(/\.[^/.]+$/, "");
+    //     }
+    //   } else {
+    //     oldPublicId = user.resume.publicId;
+    //   }
+
+    //   if (oldPublicId) {
+    //     await cloudinary.uploader.destroy(oldPublicId, {
+    //       resource_type: "image",
+    //     });
+    //   }
+    // }
   }
 
   // Upload new resume
@@ -285,8 +292,10 @@ const removeResume = asyncHandler(async (req, res) => {
   }
 
   // Get the current resume URL
-  const resumeUrl =
-    typeof user.resume === "string" ? user.resume : user.resume.url;
+  // const resumeUrl =
+  //   typeof user.resume === "string" ? user.resume : user.resume.url;
+
+  const resumeUrl = user.resume.url;
 
   // Check whether this resume was submitted with an application
   const applicationUsingResume = await Application.findOne({
@@ -295,25 +304,29 @@ const removeResume = asyncHandler(async (req, res) => {
   });
 
   // Delete from Cloudinary only if no application uses it
-  if (!applicationUsingResume) {
-    let publicId;
+  // if (!applicationUsingResume) {
+  //   let publicId;
 
-    if (typeof user.resume === "string") {
-      const match = resumeUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
+  //   if (typeof user.resume === "string") {
+  //     const match = resumeUrl.match(/\/upload\/(?:v\d+\/)?(.+)$/);
 
-      if (match) {
-        publicId = match[1].replace(/\.[^/.]+$/, "");
-      }
-    } else {
-      publicId = user.resume.publicId;
-    }
-
-    if (publicId) {
-      await cloudinary.uploader.destroy(publicId, {
-        resource_type: "image",
-      });
-    }
+  //     if (match) {
+  //       publicId = match[1].replace(/\.[^/.]+$/, "");
+  //     }
+  //   } else {
+  //     publicId = user.resume.publicId;
+  //   }
+  if (!applicationUsingResume && user.resume.publicId) {
+    await cloudinary.uploader.destroy(user.resume.publicId, {
+      resource_type: "image",
+    });
   }
+  //   if (publicId) {
+  //     await cloudinary.uploader.destroy(publicId, {
+  //       resource_type: "image",
+  //     });
+  //   }
+  // }
 
   // Remove resume from user's profile
   user.resume = undefined;

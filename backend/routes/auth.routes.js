@@ -4,6 +4,7 @@ import { verifyJWT } from "../middleware/auth.middleware.js";
 import { registerSchema } from "../validators/auth.validator.js";
 import { loginSchema } from "../validators/auth.validator.js";
 import { validate } from "../middleware/validate.middleware.js";
+import { validatePdfFile } from "../middleware/file.middleware.js";
 
 import { upload } from "../middleware/multer.middleware.js";
 
@@ -22,6 +23,7 @@ router.post(
     "/upload-resume",
     verifyJWT,
     upload.single("resume"),
+    validatePdfFile,
     uploadResume
 );
 router.delete(
